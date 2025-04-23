@@ -109,7 +109,7 @@ const filter = {
 let failed = false;
 
 Cypress.on('fail', (e) => {
-  failed = false;
+  failed = true;
   throw e;
 });
 
