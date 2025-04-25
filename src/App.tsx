@@ -116,17 +116,59 @@ export const App: React.FC = () => {
     }
   };
 
+  const toggleCompleted = async (id: number, currentStatus: boolean) => {
+    try {
+      const updatedTodo = await patchTodos(id, { completed: !currentStatus });
+
+      setAllTodos(current => current.map(t => (t.id === id ? updatedTodo : t)));
+    } catch {
+      setErrors('Unable to update todo');
+    }
+  };
+
+  const clearAllCompleted = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    const completedTodos = allTodos.filter(todo => todo.completed);
+
+    try {
+      await Promise.all(completedTodos.map(todo => deleteTodos(todo.id)));
+
+      setAllTodos(current => current.filter(todo => !todo.completed));
+    } catch {
+      setErrors('Unable to delete completed todos');
+    }
+  };
+
+  const updateAllToCompleted = async () => {
+    const shouldCompleteAll = !allTodos.every(todo => todo.completed);
+
+    try {
+      const updatedTodos = await Promise.all(
+        allTodos.map(todo =>
+          patchTodos(todo.id, { completed: shouldCompleteAll }),
+        ),
+      );
+
+      setAllTodos(updatedTodos);
+    } catch {
+      setErrors('Unable to update all todos');
+    }
+  };
+
   return (
     <div className="todoapp">
       <h1 className="todoapp__title">todos</h1>
 
       <div className="todoapp__content">
         <header className="todoapp__header">
-          <button
-            type="button"
-            className={`todoapp__toggle-all ${allTodos.every(todo => todo.completed) ? 'active' : ''}`}
-            data-cy="ToggleAllButton"
-          />
+          {allTodos.length !== 0 && (
+            <button
+              onClick={() => updateAllToCompleted()}
+              type="button"
+              className={`todoapp__toggle-all ${allTodos.every(todo => todo.completed) ? 'active' : ''}`}
+              data-cy="ToggleAllButton"
+            />
+          )}
           <form
             onSubmit={e => {
               e.preventDefault();
@@ -153,7 +195,10 @@ export const App: React.FC = () => {
                 className={`todo ${todo.completed ? 'completed' : ''}`}
               >
                 {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-                <label className="todo__status-label">
+                <label
+                  className="todo__status-label"
+                  onClick={() => toggleCompleted(todo.id, todo.completed)}
+                >
                   <input
                     data-cy="TodoStatus"
                     type="checkbox"
@@ -243,6 +288,7 @@ export const App: React.FC = () => {
             </nav>
 
             <button
+              onClick={() => clearAllCompleted()}
               type="button"
               className="todoapp__clear-completed"
               data-cy="ClearCompletedButton"
