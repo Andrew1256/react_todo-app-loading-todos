@@ -8,8 +8,10 @@ import {
   USER_ID,
 } from './api/todos';
 import { Todo } from './types/Todo';
-
-type Selected = 'all' | 'active' | 'completed';
+import { Footer } from './components/Footer';
+import { Selected } from './types/Selected';
+import { Header } from './components/Header';
+import { TodoList } from './components/TodoList';
 
 export const App: React.FC = () => {
   const [allTodos, setAllTodos] = useState<Todo[]>([]);
@@ -160,143 +162,34 @@ export const App: React.FC = () => {
       <h1 className="todoapp__title">todos</h1>
 
       <div className="todoapp__content">
-        <header className="todoapp__header">
-          {allTodos.length !== 0 && (
-            <button
-              onClick={() => updateAllToCompleted()}
-              type="button"
-              className={`todoapp__toggle-all ${allTodos.every(todo => todo.completed) ? 'active' : ''}`}
-              data-cy="ToggleAllButton"
-            />
-          )}
-          <form
-            onSubmit={e => {
-              e.preventDefault();
-              handleAdd();
-            }}
-          >
-            <input
-              value={editTodo}
-              onChange={e => setEditTodo(e.target.value)}
-              data-cy="NewTodoField"
-              type="text"
-              className="todoapp__new-todo"
-              placeholder="What needs to be done?"
-            />
-          </form>
-        </header>
+        <Header
+          allTodos={allTodos}
+          updateAll={updateAllToCompleted}
+          handleAdd={handleAdd}
+          editTodo={editTodo}
+          setEditTodo={setEditTodo}
+        />
 
-        <section className="todoapp__main" data-cy="TodoList">
-          {!loadingTodo &&
-            filteredTodos.map(todo => (
-              <div
-                key={todo.id}
-                data-cy="Todo"
-                className={`todo ${todo.completed ? 'completed' : ''}`}
-              >
-                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-                <label
-                  className="todo__status-label"
-                  onClick={() => toggleCompleted(todo.id, todo.completed)}
-                >
-                  <input
-                    data-cy="TodoStatus"
-                    type="checkbox"
-                    className="todo__status"
-                    checked={todo.completed}
-                    readOnly
-                  />
-                </label>
-
-                {updatingId === todo.id ? (
-                  <form
-                    onSubmit={e => {
-                      e.preventDefault();
-                      handleSave(todo.id);
-                    }}
-                  >
-                    <input
-                      type="text"
-                      value={updatingText}
-                      onChange={e => setUpdatingText(e.target.value)}
-                      onBlur={() => handleSave(todo.id)}
-                      autoFocus
-                      className="todo__title-field"
-                      data-cy="TodoTitleField"
-                    />
-                  </form>
-                ) : (
-                  <>
-                    <span
-                      data-cy="TodoTitle"
-                      className="todo__title"
-                      onDoubleClick={() => handleEdit(todo.id, todo.title)}
-                    >
-                      {todo.title}
-                    </span>
-
-                    <button
-                      type="button"
-                      className="todo__remove"
-                      data-cy="TodoDelete"
-                      onClick={() => handleDelete(todo.id)}
-                    >
-                      ×
-                    </button>
-                  </>
-                )}
-
-                <div data-cy="TodoLoader" className="modal overlay">
-                  <div className="modal-background has-background-white-ter" />
-                  <div className="loader" />
-                </div>
-              </div>
-            ))}
-        </section>
+        <TodoList
+          loadingTodo={loadingTodo}
+          filteredTodos={filteredTodos}
+          toggleCompleted={toggleCompleted}
+          updatingId={updatingId}
+          handleSave={handleSave}
+          updatingText={updatingText}
+          setUpdatingText={setUpdatingText}
+          handleEdit={handleEdit}
+          handleDelete={handleDelete}
+        />
 
         {allTodos.length > 0 && (
-          <footer className="todoapp__footer" data-cy="Footer">
-            <span className="todo-count" data-cy="TodosCounter">
-              {allTodos.filter(todo => !todo.completed).length} items left
-            </span>
-
-            <nav className="filter" data-cy="Filter">
-              <a
-                href="#/"
-                className={`filter__link ${selected === 'all' ? 'selected' : ''}`}
-                data-cy="FilterLinkAll"
-                onClick={() => setSelected('all')}
-              >
-                All
-              </a>
-              <a
-                href="#/active"
-                className={`filter__link ${selected === 'active' ? 'selected' : ''}`}
-                data-cy="FilterLinkActive"
-                onClick={() => setSelected('active')}
-              >
-                Active
-              </a>
-              <a
-                href="#/completed"
-                className={`filter__link ${selected === 'completed' ? 'selected' : ''}`}
-                data-cy="FilterLinkCompleted"
-                onClick={() => setSelected('completed')}
-              >
-                Completed
-              </a>
-            </nav>
-
-            <button
-              onClick={() => clearAllCompleted()}
-              type="button"
-              className="todoapp__clear-completed"
-              data-cy="ClearCompletedButton"
-              disabled={completedTodos === 0}
-            >
-              Clear completed
-            </button>
-          </footer>
+          <Footer
+            allTodos={allTodos}
+            selected={selected}
+            setSelected={setSelected}
+            clearAll={clearAllCompleted}
+            completedTodos={completedTodos}
+          />
         )}
       </div>
 
