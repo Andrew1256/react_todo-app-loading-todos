@@ -1,4 +1,5 @@
 import React from 'react';
+import classNames from 'classnames';
 import { Todo } from '../types/Todo';
 
 interface Props {
@@ -22,12 +23,12 @@ export const TodoItem: React.FC<Props> = ({
   handleEdit,
   handleDelete,
 }) => {
+  const todoItemClass = classNames('todo', {
+    completed: todo.completed,
+  });
+
   return (
-    <div
-      key={todo.id}
-      data-cy="Todo"
-      className={`todo ${todo.completed ? 'completed' : ''}`}
-    >
+    <div key={todo.id} data-cy="Todo" className={todoItemClass}>
       {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
       <label
         className="todo__status-label"

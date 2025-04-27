@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import classNames from 'classnames';
 import { UserWarning } from './UserWarning';
 import {
   deleteTodos,
@@ -20,7 +21,7 @@ export const App: React.FC = () => {
   const [updatingText, setUpdatingText] = useState('');
   const [loadingTodo, setLoadingTodo] = useState(true);
   const [editTodo, setEditTodo] = useState('');
-  const [selected, setSelected] = useState<Selected>('all');
+  const [selected, setSelected] = useState<Selected>(Selected.All);
 
   useEffect(() => {
     const loadTodos = async () => {
@@ -44,9 +45,7 @@ export const App: React.FC = () => {
       return;
     }
 
-    const timeout = setTimeout(() => {
-      setErrors('');
-    }, 3000);
+    const timeout = setTimeout(() => setErrors(''), 3000);
 
     return () => clearTimeout(timeout);
   }, [errors]);
@@ -56,11 +55,11 @@ export const App: React.FC = () => {
   }
 
   const filteredTodos = allTodos.filter(todo => {
-    if (selected === 'active') {
+    if (selected === Selected.Active) {
       return !todo.completed;
     }
 
-    if (selected === 'completed') {
+    if (selected === Selected.Completed) {
       return todo.completed;
     }
 
@@ -129,11 +128,10 @@ export const App: React.FC = () => {
   };
 
   const clearAllCompleted = async () => {
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    const completedTodos = allTodos.filter(todo => todo.completed);
+    const completedTodosList = allTodos.filter(todo => todo.completed);
 
     try {
-      await Promise.all(completedTodos.map(todo => deleteTodos(todo.id)));
+      await Promise.all(completedTodosList.map(todo => deleteTodos(todo.id)));
 
       setAllTodos(current => current.filter(todo => !todo.completed));
     } catch {
@@ -156,6 +154,14 @@ export const App: React.FC = () => {
       setErrors('Unable to update all todos');
     }
   };
+
+  const errorNotificationClass = classNames(
+    'notification',
+    'is-danger',
+    'is-light',
+    'has-text-weight-normal',
+    { hidden: !errors },
+  );
 
   return (
     <div className="todoapp">
@@ -193,10 +199,7 @@ export const App: React.FC = () => {
         )}
       </div>
 
-      <div
-        data-cy="ErrorNotification"
-        className={`notification is-danger is-light has-text-weight-normal ${errors ? '' : 'hidden'}`}
-      >
+      <div data-cy="ErrorNotification" className={errorNotificationClass}>
         <button
           data-cy="HideErrorButton"
           type="button"
